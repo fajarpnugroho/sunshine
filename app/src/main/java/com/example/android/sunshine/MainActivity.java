@@ -29,7 +29,7 @@ import android.widget.TextView;
 import com.example.android.sunshine.data.SunshinePreferences;
 import com.example.android.sunshine.data.WeatherResponse;
 import com.example.android.sunshine.services.ServiceManager;
-import com.example.android.sunshine.services.UdacityServices;
+import com.example.android.sunshine.services.WeatherServices;
 import com.example.android.sunshine.utilities.NetworkUtils;
 
 import retrofit2.Call;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ProgressBar mLoadingIndicator;
     private RecyclerView recyclerView;
-    private UdacityServices udacityServices;
+    private WeatherServices udacityServices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         // Create service
-        udacityServices = ServiceManager.getRetrofitInstance().create(UdacityServices.class);
+        udacityServices = ServiceManager.getRetrofitInstance().create(WeatherServices.class);
 
         /* Once all of our views are setup, we can load the weather data. */
         loadWeatherData();
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
         String location = SunshinePreferences.getPreferredWeatherLocation(this);
         // Doing network call using retrofit 2
-        Call<WeatherResponse> call = udacityServices.getWeatherAtLocation(location,
+        Call<WeatherResponse> call = udacityServices.getStaticWeatherByLocation(location,
                 NetworkUtils.format, NetworkUtils.units, NetworkUtils.numDays);
 
         // Use enqueue for async call
