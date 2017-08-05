@@ -31,8 +31,6 @@ import okhttp3.Response;
  */
 public final class NetworkUtils {
 
-    public static final String BASE_URL = "https://andfun-weather.udacity.com/";
-
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
     private static final String DYNAMIC_WEATHER_URL =
@@ -51,18 +49,18 @@ public final class NetworkUtils {
      */
 
     /* The format we want our API to return */
-    public static final String format = "json";
+    private static final String format = "json";
     /* The units we want our API to return */
-    public static final String units = "metric";
+    private static final String units = "metric";
     /* The number of days we want our API to return */
-    public static final int numDays = 14;
+    private static final int numDays = 14;
 
-    public final static String QUERY_PARAM = "q";
-    public final static String LAT_PARAM = "lat";
-    public final static String LON_PARAM = "lon";
-    public final static String FORMAT_PARAM = "mode";
-    public final static String UNITS_PARAM = "units";
-    public final static String DAYS_PARAM = "cnt";
+    final static String QUERY_PARAM = "q";
+    final static String LAT_PARAM = "lat";
+    final static String LON_PARAM = "lon";
+    final static String FORMAT_PARAM = "mode";
+    final static String UNITS_PARAM = "units";
+    final static String DAYS_PARAM = "cnt";
 
     /**
      * Builds the URL used to talk to the weather server using a location. This location is based

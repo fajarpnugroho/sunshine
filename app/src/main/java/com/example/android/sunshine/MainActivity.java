@@ -15,6 +15,7 @@
  */
 package com.example.android.sunshine;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,17 +28,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.sunshine.data.SunshinePreferences;
+import com.example.android.sunshine.data.WeatherItem;
 import com.example.android.sunshine.data.WeatherResponse;
-import com.example.android.sunshine.services.ServiceManager;
-import com.example.android.sunshine.services.UdacityServices;
 import com.example.android.sunshine.utilities.NetworkUtils;
+import com.example.android.sunshine.utilities.OpenWeatherJsonUtils;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
+import java.net.URL;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ProgressBar mLoadingIndicator;
     private RecyclerView recyclerView;
-    private UdacityServices udacityServices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,19 +70,8 @@ public class MainActivity extends AppCompatActivity {
          */
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
-        // Create service
-        udacityServices = ServiceManager.getRetrofitInstance().create(UdacityServices.class);
-
         /* Once all of our views are setup, we can load the weather data. */
         loadWeatherData();
-    }
-
-    public void showLoading() {
-        mLoadingIndicator.setVisibility(VISIBLE);
-    }
-
-    public void hideLoading() {
-        mLoadingIndicator.setVisibility(GONE);
     }
 
     /**
@@ -97,42 +82,7 @@ public class MainActivity extends AppCompatActivity {
         showWeatherDataView();
 
         String location = SunshinePreferences.getPreferredWeatherLocation(this);
-        // Doing network call using retrofit 2
-        Call<WeatherResponse> call = udacityServices.getWeatherAtLocation(location,
-                NetworkUtils.format, NetworkUtils.units, NetworkUtils.numDays);
-
-        // Use enqueue for async call
-        call.enqueue(new Callback<WeatherResponse>() {
-            @Override
-            public void onResponse(Call<WeatherResponse> call,
-                                   Response<WeatherResponse> response) {
-                // all success response will be handled here
-
-                if (response.isSuccessful()) {
-                    // Success mean HTTP Status code 200
-                    WeatherResponse weatherResponse = response.body();
-
-                    if (weatherResponse == null) {
-                        showErrorMessage();
-                        return;
-                    }
-
-                    adapter.setWeatherDatas(weatherResponse.list);
-                    hideLoading();
-
-                } else {
-                    // All HTTP status code 400 will be handled here
-                    showErrorMessage();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                // all error will be handled here
-                showErrorMessage();
-            }
-        });
-
+        new FetchWeatherTask().execute(location);
     }
 
     /**
@@ -144,9 +94,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showWeatherDataView() {
         /* First, make sure the error is invisible */
-        showLoading();
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-        recyclerView.setVisibility(VISIBLE);
+        recyclerView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -157,12 +106,56 @@ public class MainActivity extends AppCompatActivity {
      * need to check whether each view is currently visible or invisible.
      */
     private void showErrorMessage() {
-        hideLoading();
-
         /* First, hide the currently visible data */
         recyclerView.setVisibility(View.INVISIBLE);
         /* Then, show the error */
-        mErrorMessageDisplay.setVisibility(VISIBLE);
+        mErrorMessageDisplay.setVisibility(View.VISIBLE);
+    }
+
+    public class FetchWeatherTask extends AsyncTask<String, Void, List<WeatherItem>> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected List<WeatherItem> doInBackground(String... params) {
+
+            /* If there's no zip code, there's nothing to look up. */
+            if (params.length == 0) {
+                return null;
+            }
+
+            String location = params[0];
+            URL weatherRequestUrl = NetworkUtils.buildUrl(location);
+
+            try {
+                String jsonWeatherResponse = NetworkUtils
+                        .getResponseFromHttpUrl(weatherRequestUrl);
+
+                WeatherResponse weatherResponse = OpenWeatherJsonUtils
+                        .getWeatherResponseFromJson(jsonWeatherResponse);
+
+                return weatherResponse.list;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(List<WeatherItem> weatherData) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            if (weatherData != null) {
+                showWeatherDataView();
+                adapter.setWeatherDatas(weatherData);
+            } else {
+                showErrorMessage();
+            }
+        }
     }
 
     @Override
