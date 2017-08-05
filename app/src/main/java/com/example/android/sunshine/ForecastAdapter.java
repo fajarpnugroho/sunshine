@@ -6,21 +6,13 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.android.sunshine.data.WeatherItem;
-import com.example.android.sunshine.utilities.SunshineDateUtils;
-import com.example.android.sunshine.utilities.SunshineWeatherUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private List<WeatherItem> weatherDatas = new ArrayList<>();
+    private String[] weatherDatas;
 
-    public void setWeatherDatas(List<WeatherItem>  weatherDatas) {
-        this.weatherDatas.clear();
-        this.weatherDatas.addAll(weatherDatas);
+    public void setWeatherDatas(String[] weatherDatas) {
+        this.weatherDatas = weatherDatas;
         notifyDataSetChanged();
     }
 
@@ -34,18 +26,19 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (weatherDatas == null) return;
 
-        WeatherItem weatherItem = weatherDatas.get(position);
+        String weatherItem = weatherDatas[position];
         ForecaseViewHolder viewHolder = (ForecaseViewHolder) holder;
-        viewHolder.bindData(weatherItem, position);
+        viewHolder.bindData(weatherItem);
     }
 
     @Override
     public int getItemCount() {
-        return weatherDatas.size();
+        if (weatherDatas== null) return 0;
+        return weatherDatas.length;
     }
 
     public void clearData() {
-        weatherDatas.clear();
+        weatherDatas = null;
         notifyDataSetChanged();
     }
 
@@ -67,22 +60,8 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     itemView.findViewById(R.id.tv_weather_data);
         }
 
-        public void bindData(WeatherItem weatherData, int position) {
-
-            long localDate = System.currentTimeMillis();
-            long utcDate = SunshineDateUtils.getUTCDateFromLocal(localDate);
-            long startDay = SunshineDateUtils.normalizeDate(utcDate);
-
-            long dateTimeMillis = startDay + SunshineDateUtils.DAY_IN_MILLIS * position;
-            String date = SunshineDateUtils.getFriendlyDateString(itemView.getContext(),
-                    dateTimeMillis, false);
-
-            String description = weatherData.weather.get(0).description;
-
-            String highAndLow = SunshineWeatherUtils.formatHighLows(itemView.getContext(),
-                    weatherData.temp.max, weatherData.temp.min);
-
-            textView.setText(String.format("%s - %s - %s", date, description, highAndLow));
+        public void bindData(String weatherData) {
+            textView.setText(weatherData);
         }
     }
 }

@@ -19,19 +19,16 @@ import android.net.Uri;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import java.util.Scanner;
 
 /**
  * These utilities will be used to communicate with the weather servers.
  */
 public final class NetworkUtils {
-
-    public static final String BASE_URL = "https://andfun-weather.udacity.com/";
 
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
@@ -51,18 +48,18 @@ public final class NetworkUtils {
      */
 
     /* The format we want our API to return */
-    public static final String format = "json";
+    private static final String format = "json";
     /* The units we want our API to return */
-    public static final String units = "metric";
+    private static final String units = "metric";
     /* The number of days we want our API to return */
-    public static final int numDays = 14;
+    private static final int numDays = 14;
 
-    public final static String QUERY_PARAM = "q";
-    public final static String LAT_PARAM = "lat";
-    public final static String LON_PARAM = "lon";
-    public final static String FORMAT_PARAM = "mode";
-    public final static String UNITS_PARAM = "units";
-    public final static String DAYS_PARAM = "cnt";
+    final static String QUERY_PARAM = "q";
+    final static String LAT_PARAM = "lat";
+    final static String LON_PARAM = "lon";
+    final static String FORMAT_PARAM = "mode";
+    final static String UNITS_PARAM = "units";
+    final static String DAYS_PARAM = "cnt";
 
     /**
      * Builds the URL used to talk to the weather server using a location. This location is based
@@ -111,18 +108,22 @@ public final class NetworkUtils {
      * @return The contents of the HTTP response.
      * @throws IOException Related to network and stream reading
      */
-    @SuppressWarnings("ConstantConditions")
     public static String getResponseFromHttpUrl(URL url) throws IOException {
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        try {
+            InputStream in = urlConnection.getInputStream();
 
-        Response response = okHttpClient.newCall(request).execute();
-        if (response.body() != null) {
-            return response.body().string();
+            Scanner scanner = new Scanner(in);
+            scanner.useDelimiter("\\A");
+
+            boolean hasInput = scanner.hasNext();
+            if (hasInput) {
+                return scanner.next();
+            } else {
+                return null;
+            }
+        } finally {
+            urlConnection.disconnect();
         }
-
-        return null;
     }
 }

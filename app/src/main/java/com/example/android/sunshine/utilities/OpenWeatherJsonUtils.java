@@ -15,12 +15,8 @@
  */
 package com.example.android.sunshine.utilities;
 
-import com.google.gson.Gson;
-
 import android.content.ContentValues;
 import android.content.Context;
-
-import com.example.android.sunshine.data.WeatherResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,12 +28,6 @@ import java.net.HttpURLConnection;
  * Utility functions to handle OpenWeatherMap JSON data.
  */
 public final class OpenWeatherJsonUtils {
-
-    public static final Gson GSON = new Gson();
-
-    public static WeatherResponse getWeatherResponseFromJson(String forecastJsonStr) {
-        return GSON.fromJson(forecastJsonStr, WeatherResponse.class);
-    }
 
     /**
      * This method parses JSON from a web response and returns an array of Strings
