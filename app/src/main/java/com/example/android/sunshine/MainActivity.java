@@ -15,7 +15,10 @@
  */
 package com.example.android.sunshine;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,7 +42,7 @@ import retrofit2.Response;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ForecastAdapter.ItemClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
 
     private ForecastAdapter adapter;
@@ -49,10 +52,16 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private WeatherServices udacityServices;
 
+    // one of storage option on android, using key value pair to store data
+    private SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
+
+        // use default share preference
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerview_forecast);
         recyclerView.setAdapter(adapter);
@@ -63,7 +72,14 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        adapter = new ForecastAdapter();
+        adapter = new ForecastAdapter(this);
+
+        // get data from share preference
+        adapter.changeFontSize(Integer
+                .parseInt(sharedPreferences.getString(SettingActivity.PREF_FONT_SIZE,
+                        SettingActivity.DEFAULT_FONT_SIZE)));
+
+
         recyclerView.setAdapter(adapter);
         /*
          * The ProgressBar that will indicate to the user that we are loading data. It will be
@@ -185,6 +201,48 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        if (id == R.id.action_setting) {
+            openSetting();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openSetting() {
+        Intent intent = SettingActivity.createIntent(this);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onItemClick(String extraData) {
+        /*
+        Explicit Intent: explicit intent adalah jenis intent yang jelas.
+        Biasanya digunakan untuk berpindah activity, atau menjalankan service
+        pada satu aplikasi yang sama.
+         */
+        Intent intent = DetailActivity.createIntent(this, extraData);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equalsIgnoreCase(SettingActivity.PREF_FONT_SIZE)) {
+            int fontSize = Integer.parseInt(sharedPreferences.getString(key,
+                    SettingActivity.DEFAULT_FONT_SIZE));
+            adapter.changeFontSize(fontSize);
+        }
     }
 }

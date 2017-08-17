@@ -3,6 +3,7 @@ package com.example.android.sunshine;
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -18,6 +19,13 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private List<WeatherItem> weatherDatas = new ArrayList<>();
 
+    private ItemClickListener itemClickListener;
+    private int fontSize;
+
+    public ForecastAdapter(ItemClickListener itemClickListener) {
+        this.itemClickListener = itemClickListener;
+    }
+
     public void setWeatherDatas(List<WeatherItem>  weatherDatas) {
         this.weatherDatas.clear();
         this.weatherDatas.addAll(weatherDatas);
@@ -27,7 +35,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public RecyclerView.ViewHolder
     onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ForecaseViewHolder(parent);
+        return new ForecaseViewHolder(parent, itemClickListener);
     }
 
     @Override
@@ -37,6 +45,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         WeatherItem weatherItem = weatherDatas.get(position);
         ForecaseViewHolder viewHolder = (ForecaseViewHolder) holder;
         viewHolder.bindData(weatherItem, position);
+        viewHolder.textView.setTextSize(fontSize);
     }
 
     @Override
@@ -46,6 +55,11 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public void clearData() {
         weatherDatas.clear();
+        notifyDataSetChanged();
+    }
+
+    public void changeFontSize(int fontSize) {
+        this.fontSize = fontSize;
         notifyDataSetChanged();
     }
 
@@ -59,15 +73,16 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public class ForecaseViewHolder extends BaseHolder {
 
+        private final ItemClickListener itemClickListener;
         private TextView textView;
 
-        public ForecaseViewHolder(ViewGroup parent) {
+        public ForecaseViewHolder(ViewGroup parent, ItemClickListener itemClickListener) {
             super(R.layout.forecase_item_list, parent);
-            textView = (TextView)
-                    itemView.findViewById(R.id.tv_weather_data);
+            this.itemClickListener = itemClickListener;
+            textView = (TextView) itemView.findViewById(R.id.tv_weather_data);
         }
 
-        public void bindData(WeatherItem weatherData, int position) {
+        public void bindData(final WeatherItem weatherData, int position) {
 
             long localDate = System.currentTimeMillis();
             long utcDate = SunshineDateUtils.getUTCDateFromLocal(localDate);
@@ -83,6 +98,19 @@ public class ForecastAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     weatherData.temp.max, weatherData.temp.min);
 
             textView.setText(String.format("%s - %s - %s", date, description, highAndLow));
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (itemClickListener == null) return;
+
+                    itemClickListener.onItemClick(textView.getText().toString());
+                }
+            });
         }
+    }
+
+    public interface ItemClickListener {
+        void onItemClick(String item);
     }
 }

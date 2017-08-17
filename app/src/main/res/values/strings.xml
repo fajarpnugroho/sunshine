@@ -131,20 +131,33 @@
     <string name="condition_962">Hurricane</string>
 
     <string name="condition_unknown">Unknown (<xliff:g id="conditionId">%1$d</xliff:g>)</string>
+    <string name="title_activity_settings">Settings</string>
 
+    <!-- Strings related to Settings -->
 
-    <!-- - - - - - - - - - - -->
-    <!-- Used by NetworkUtils-->
-    <!-- - - - - - - - - - - -->
-    <!--NONE-->
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
 
-    <!-- - - - - - - - - - - - - - - -->
-    <!-- Used by OpenWeatherJsonUtils-->
-    <!-- - - - - - - - - - - - - - - -->
-    <!--NONE-->
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
 
-    <!-- - - - - - - - - - - - - - -->
-    <!--Used by SunshinePreferences-->
-    <!-- - - - - - - - - - - - - - -->
-    <!--NONE-->
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+
+    <string-array name="font_size_label">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+    </string-array>
+
+    <string-array name="font_size_value">
+        <item>12</item>
+        <item>18</item>
+        <item>24</item>
+    </string-array>
+
 </resources>
