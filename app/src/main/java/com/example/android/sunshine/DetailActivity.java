@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 
@@ -41,5 +43,43 @@ public class DetailActivity extends AppCompatActivity {
         TextView tvWeatherData = (TextView) findViewById(R.id.tv_weather_data);
         tvWeatherData.setText(extraData);
         tvWeatherData.setTextSize(fontSize);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.detail, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            case R.id.action_share:
+                openShareIntent();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void openShareIntent() {
+
+        String extraData = getIntent().getExtras().getString(EXTRA_WEATHER_DATA);
+
+        /**
+         * Implicit intent, jenis intent yang digunakan untuk menjalankan activity diluar aplikasi.
+         * Biasa juga disebut sebagai Commont Intent. Ada bermacam commont intent, seperti camera, maps, email, dst.
+         * Untuk lebih jelas bisa membuka link berikut ini:
+         * @link https://developer.android.com/guide/components/intents-common.html
+         */
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TEXT, extraData);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 }
